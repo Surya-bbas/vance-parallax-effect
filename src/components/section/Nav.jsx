@@ -7,7 +7,7 @@ const Nav = () => {
   const isAppPage = location.pathname === '/app';
 
   return (
-    <nav className="sticky z-60 top-0 px-10 py-5 border-b-[1px] border-gray-500 bg-vanceGray">
+    <nav className={`top-0 px-10 py-5 border-b-[1px] border-gray-500 bg-vanceGray ${location.pathname === '/' ? 'sticky z-60' : ''}`}>
       <div className="flex justify-between items-center max-w-[1440px] mx-auto">
         <img src="vanceLogo.svg" alt="Vance Logo" className="h-8" />
         <motion.div className="relative" whileHover={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 150 }}>

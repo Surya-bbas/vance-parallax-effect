@@ -5,6 +5,7 @@ import Nav from '../section/Nav';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 import { getFirestore, collection, getDocs, addDoc, query, where } from 'firebase/firestore';
 import { FaSquarePlus } from 'react-icons/fa6';
+import { CgLogOff } from 'react-icons/cg';
 
 const App = () => {
 
@@ -15,6 +16,7 @@ const App = () => {
 
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [selectedCurrency, setSelectedCurrency] = useState('UK'); 
 
     const [data, setData] = useState([]);
     const [currentUser, setCurrentUser] = useState();
@@ -37,8 +39,9 @@ const App = () => {
         
         
         const fetchData = async () => {
+            const currencyCode = selectedCurrency === 'UAE' ? 'AEDINR%3DX' : 'GBPINR%3DX';
             // i am using a CORS proxy here that is why the end point is different from the given one 
-            const response = await fetch(`https://api.allorigins.win/raw?url= + ${encodeURIComponent("https://web-api.vance.club/public/api/currency-converter/forex?code=AEDINR%3DX&timeline=1M")}`,{
+            const response = await fetch(`https://api.allorigins.win/raw?url= + ${encodeURIComponent(`https://web-api.vance.club/public/api/currency-converter/forex?code=${currencyCode}&timeline=1M`)}`,{
                 method: 'GET',
             })
             const data = await response.json();       
@@ -62,7 +65,7 @@ const App = () => {
         fetchAlerts();
         
         return () => unsubscribe();     
-    }, [auth, currentUser]);
+    }, [auth, currentUser, selectedCurrency]); 
 
     const handleLogin = () => {
         signInWithPopup(auth, provider)
@@ -91,7 +94,8 @@ const App = () => {
             name: newAlertName,
             targetRate: newTargetRate,
             savedDate: new Date().toLocaleDateString('en-GB'),
-            userId: currentUser.uid
+            userId: currentUser.uid,
+            currency: selectedCurrency 
         };
 
         await addDoc(alertRef, newAlert);
@@ -114,7 +118,7 @@ const App = () => {
   }
 
   return (
-    <div className='h-[100vh] bg-vanceGray'>
+    <div className=' bg-vanceGray'>
         <div
         className='absolute top-0 left-0 z-10 w-full h-full'
         style={!currentUser ? {
@@ -124,8 +128,18 @@ const App = () => {
         >
             
         </div>
-        <div className='absolute z-50 w-full h-full'>
+        <div className={`w-full h-full ${currentUser !== "" ? 'absolute z-50' : " " }`}>
             <Nav />   
+            {currentUser && (
+                <div className="flex justify-end p-4">
+                    <div 
+                        className="flex items-center justify-center w-10 h-10 text-white bg-red-500 rounded-full cursor-pointer"
+                        onClick={handleLogout}
+                    >
+                        <CgLogOff  size={24}/>
+                    </div>
+                </div>
+            )}
             {
                 !currentUser ? (
 
@@ -171,9 +185,19 @@ const App = () => {
                     </div>
                     
                 ) : (
-                    <div className='flex flex-col items-center justify-center mt-4'>
+                    <div className='flex flex-col items-center justify-center mt-24'>
                         
                         <div className='flex flex-col bg-[#222222] rounded-xl '>
+                            <div className="flex justify-start p-4 pt-6 pb-2">
+                                <select 
+                                    value={selectedCurrency}
+                                    onChange={(e) => setSelectedCurrency(e.target.value)}
+                                    className="px-4 py-2 text-white bg-[#333333] rounded-lg"
+                                >
+                                    <option value="UAE">🇦🇪 UAE (AED)</option>
+                                    <option value="UK">🇬🇧 UK (GBP)</option>
+                                </select>
+                            </div>
                             
                             <AreaChart
                             className='text-orange-500 '
@@ -194,7 +218,7 @@ const App = () => {
                             >
                             <CartesianGrid  />
                             <XAxis dataKey="resDate" stroke="#FFFFFF" tickSize={30}/>
-                            <YAxis stroke="#FFFFFF"  type="number" domain={[22.55, 23]} allowDataOverflow />
+                            <YAxis stroke="#FFFFFF" type="number" domain={selectedCurrency === 'UAE' ? [22.55, 23] : [102, 108]} allowDataOverflow />
                             <Tooltip itemStyle={{color: '#000'}} />
                             <Area type="monotone" dataKey="high" stackId="1" stroke="#cde779" fill="#cde779" />
                             <Area type="monotone" dataKey="low" stackId="2" stroke="#e77980" fill="#e77980" />
@@ -202,7 +226,7 @@ const App = () => {
                             </AreaChart>
                             
                             <div className='flex justify-between px-6 pb-4'>
-                                <span className="text-2xl font-bold text-white">₹84.00</span>                                
+                                <span className="text-2xl font-bold text-white">₹{(Math.round(data[data.length - 1]?.high * 100) / 100).toFixed(2)}</span>                                
 
                                 <div>
                                     <motion.div className="relative" whileHover={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 150 }}>
@@ -226,9 +250,8 @@ const App = () => {
                                 <div className="p-8 bg-[#222222] rounded-xl w-96 ">
                                     <h2 className="mb-4 text-2xl font-bold text-center text-white">Set rate alert!</h2>
                                     <div className='flex flex-col items-center w-full gap-2 pb-4'>
-                                        <img  src="ukLogo.svg" alt="UK Flag" className="w-24 h-24 " />
-                                        <span className="text-white">UK <span className='text-gray-500'>£(GBP)</span></span>
-
+                                        <img  src={selectedCurrency === 'UAE' ? "uaeLogo.png" : "ukLogo.svg"} alt={`${selectedCurrency} Flag`} className="w-24 h-24 " />
+                                        <span className="text-white">{selectedCurrency} <span className='text-gray-500'>{selectedCurrency === 'UAE' ? '(AED)' : '£(GBP)'}</span></span>
                                     </div>
                                     <div className="flex flex-col gap-4">
                                         <form onSubmit={handleAddAlert}>
@@ -281,7 +304,7 @@ const App = () => {
                             </div>
                         )}
 
-                        <div className='h-[400px] overflow-auto hide-scrollbar mt-6'>
+                        <div className='h-[550px] overflow-auto hide-scrollbar my-6 '>
                             {/* alerts */}
                             {alerts.map((alert) => (
                                 <div key={alert.id} className="flex items-start gap-4 mt-8 p-4 bg-[#222222] rounded-xl w-96 justify-between px-6">
@@ -292,8 +315,8 @@ const App = () => {
                                         </div>
 
                                         <div className="flex items-center gap-2">
-                                            <img src="ukLogo.svg" alt="UK Flag" className="w-5 h-5" />
-                                            <span className="text-white">UK <span className='text-gray-500'>£(GBP)</span></span>
+                                            <img src={alert.currency === 'UAE' ? "uaeLogo.png" : "ukLogo.svg"} alt={`${alert.currency} Flag`} className="w-5 h-5" />
+                                            <span className="text-white">{alert.currency} <span className='text-gray-500'>{alert.currency === 'UAE' ? '(AED)' : '£(GBP)'}</span></span>
                                         </div>
                                     </div>
                                     <div className="flex gap-2 text-white">
