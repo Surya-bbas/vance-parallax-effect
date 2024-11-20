@@ -43,8 +43,8 @@ const App = () => {
             })
             const data = await response.json();       
             console.log(data);     
-            setData(data);
-            return data;
+            setData(data.slice(0, 20)); // Take only the first 20 elements
+            return data.slice(0, 20);
         }
         fetchData();   
 
