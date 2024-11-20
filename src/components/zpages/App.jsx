@@ -37,8 +37,8 @@ const App = () => {
         
         
         const fetchData = async () => {
-            
-            const response = await fetch('https://web-api.vance.club/public/api/currency-converter/forex?code=AEDINR%3DX&timeline=1M',{
+            // i am using a CORS proxy here that is why the end point is different from the given one 
+            const response = await fetch('https://api.allorigins.win/raw?url=https://web-api.vance.club/public/api/currency-converter/forex?code=AEDINR%3DX&timeline=1M',{
                 method: 'GET',
             })
             const data = await response.json();       
