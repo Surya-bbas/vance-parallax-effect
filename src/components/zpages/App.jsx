@@ -38,13 +38,13 @@ const App = () => {
         
         const fetchData = async () => {
             // i am using a CORS proxy here that is why the end point is different from the given one 
-            const response = await fetch('https://web-api.vance.club/public/api/currency-converter/forex?code=AEDINR%3DX&timeline=1M',{
+            const response = await fetch(`https://api.allorigins.win/raw?url= + ${encodeURIComponent("https://web-api.vance.club/public/api/currency-converter/forex?code=AEDINR%3DX&timeline=1M")}`,{
                 method: 'GET',
             })
             const data = await response.json();       
             console.log(data);     
-            setData(data.slice(0, 20)); // Take only the first 20 elements
-            return data.slice(0, 20);
+            setData(data); 
+            return data
         }
         fetchData();   
 
