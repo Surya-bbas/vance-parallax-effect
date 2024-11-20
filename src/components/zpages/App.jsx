@@ -150,7 +150,7 @@ const App = () => {
                                 <motion.img 
                                     src="googleBtn.svg" 
                                     alt=""  
-                                    className='mt-12'
+                                    className='mt-12 cursor-pointer'
                                     whileHover={{ scale: 1.05 }}
                                     onClick={handleLogin}
                                 />
